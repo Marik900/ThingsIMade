@@ -1,4 +1,5 @@
 @ECHO OFF
+set ruleuse=0
 set /p target="Where are your hashes? "
 set /p list="Which wordlist would you like to use?(No ext. PATH to set an alternate path) "
 if %list% == "PATH" (
@@ -7,6 +8,12 @@ if %list% == "PATH" (
 	set listpath=C:\Users\%USERNAME%\Documents\hashcat-6.1.1\Wordlists\%list%.txt
 )
 ECHO Wordlist: %listpath%
+set /p rule="Rules List?:"
+if NOT %rule% == "" (
+	set ruleuse=1
+	set rules=C:\Users\%USERNAME%\Documents\hashcat-6.1.1\rules\%rule%.rule
+	)
+ECHO RulesList: %rules%
 set /p mode="And your mode? "
 set /p frd="Finally; Recursive?(1) or Folder?(2)"
 
@@ -30,9 +37,15 @@ REM This is recursive
 FOR /R %target% %%G IN (*.*) DO (
 	ECHO "Now Hashing: %%G"
 	timeout /t 5 /nobreak
-	@ECHO ON
-	hashcat -m %mode% %%G %listpath%
-	@ECHO OFF
+	if %ruleuse%==1 (
+		@ECHO ON
+		hashcat -m %mode% -r %rules% %%G %listpath%
+		@ECHO OFF
+		) else (
+		@ECHO ON
+		hashcat -m %mode% %%G %listpath%
+		@ECHO OFF
+	)
 	timeout /t 60
 	)
 
@@ -47,9 +60,15 @@ REM This is single folder
 FOR %%G IN (%target%\*) DO (
 	ECHO "Now Hashing: %%G"
 	timeout /t 5 /nobreak
-	@ECHO ON
-	hashcat -m %mode% %%G %listpath%
-	@ECHO OFF
+	if %ruleuse%==1 (
+		@ECHO ON
+		hashcat -m %mode% -r %rules% %%G %listpath%
+		@ECHO OFF
+		) else (
+		@ECHO ON
+		hashcat -m %mode% %%G %listpath%
+		@ECHO OFF
+	)
 	timeout /t 60
 	)
 
